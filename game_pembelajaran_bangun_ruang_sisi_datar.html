@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petualangan Bangun Ruang Sisi Datar - Kelas 9</title>
+    <!-- Memuat Tailwind CSS untuk tata letak yang responsif dan modern -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Google Fonts: Fredoka untuk nuansa game edukasi yang ramah dan Inter untuk keterbacaan soal -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, .font-game {
+            font-family: 'Fredoka', sans-serif;
+        }
+        /* Animasi halus untuk tombol dan kartu */
+        .btn-option {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 0 rgba(15, 23, 42, 0.4);
+        }
+        .btn-option:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 rgba(15, 23, 42, 0.4);
+        }
+        .btn-option:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(15, 23, 42, 0.4);
+        }
+        .btn-primary {
+            background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 5px 0 #1d4ed8;
+            transition: all 0.15s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #1d4ed8;
+        }
+        .btn-primary:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #1d4ed8;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-3 sm:p-6">
+
+    <!-- Kontainer Utama Aplikasi -->
+    <div class="w-full max-w-4xl bg-slate-900/85 backdrop-blur-md border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden">
+        
+        <!-- Header Game (Skor & Progres) -->
+        <header id="game-header" class="hidden bg-slate-800/90 border-b border-slate-700 px-5 py-4 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 text-white font-game font-bold px-3.5 py-1.5 rounded-xl text-sm sm:text-base shadow-inner">
+                    Soal <span id="current-q-num">1</span>/10
+                </div>
+                <span id="difficulty-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    Level 1: Mudah
+                </span>
+            </div>
+
+            <!-- Bar Progres -->
+            <div class="flex-1 max-w-xs hidden sm:block">
+                <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden p-0.5">
+                    <div id="progress-bar" class="bg-gradient-to-r from-cyan-400 to-indigo-500 h-full rounded-full transition-all duration-500" style="width: 10%;"></div>
+                </div>
+            </div>
+
+            <!-- Papan Skor -->
+            <div class="flex items-center gap-2 bg-amber-500/15 border border-amber-500/30 px-4 py-1.5 rounded-xl">
+                <span class="text-amber-400 text-lg">⭐</span>
+                <span class="text-xs text-amber-200 uppercase font-semibold">Skor:</span>
+                <span id="score-display" class="font-game font-bold text-xl text-amber-400">0</span>
+            </div>
+        </header>
+
+        <!-- LAYAR 1: HALAMAN MULAI (START SCREEN) -->
+        <section id="start-screen" class="p-6 sm:p-12 text-center flex flex-col items-center justify-center min-h-[500px] animate-pop">
+            <div class="w-24 h-24 bg-gradient-to-tr from-indigo-600 to-cyan-400 rounded-3xl flex items-center justify-center shadow-lg shadow-indigo-500/30 mb-6 rotate-3">
+                <!-- Ikon Kubus SVG -->
+                <svg class="w-14 h-14 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+            </div>
+            <span class="text-cyan-400 font-semibold tracking-wider uppercase text-xs sm:text-sm mb-2">Matematika Kelas 9 SMP</span>
+            <h1 class="text-3xl sm:text-5xl font-bold text-white mb-4 leading-tight">
+                Petualangan Bangun Ruang <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">Sisi Datar</span>
+            </h1>
+            <p class="text-slate-300 max-w-xl text-sm sm:text-base mb-8 leading-relaxed">
+                Uji pemahamanmu tentang <strong>Kubus, Balok, Prisma, dan Limas</strong>! Selesaikan 10 tantangan dengan tingkat kesulitan bertahap, amati ilustrasi 3D interaktif pada layar, dan kumpulkan skor tertinggi.
+            </p>
+
+            <!-- Info Tingkat Kesulitan -->
+            <div class="grid grid-cols-3 gap-3 w-full max-w-lg mb-8 text-xs sm:text-sm">
+                <div class="bg-slate-800/80 border border-slate-700 p-3 rounded-2xl">
+                    <div class="text-emerald-400 font-bold mb-1">Soal 1 - 3</div>
+                    <div class="text-slate-400">Konsep Dasar & Sifat</div>
+                </div>
+                <div class="bg-slate-800/80 border border-slate-700 p-3 rounded-2xl">
+                    <div class="text-amber-400 font-bold mb-1">Soal 4 - 7</div>
+                    <div class="text-slate-400">Luas & Volume</div>
+                </div>
+                <div class="bg-slate-800/80 border border-slate-700 p-3 rounded-2xl">
+                    <div class="text-rose-400 font-bold mb-1">Soal 8 - 10</div>
+                    <div class="text-slate-400">Aplikasi & HOTS</div>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="btn-primary text-white font-game font-bold text-lg sm:text-xl px-10 py-4 rounded-2xl cursor-pointer">
+                Mulai Petualangan 🚀
+            </button>
+        </section>
+
+        <!-- LAYAR 2: AREA BERMAIN (GAMEPLAY SCREEN) -->
+        <section id="play-screen" class="hidden p-4 sm:p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                
+                <!-- Kolom Kiri: Visualisasi Canvas Bangun Ruang -->
+                <div class="lg:col-span-5 flex flex-col items-center">
+                    <div id="canvas-wrapper" class="w-full h-60 sm:h-72 bg-slate-950/90 border-2 border-slate-700/80 rounded-2xl relative overflow-hidden shadow-inner">
+                        <canvas id="geometryCanvas"></canvas>
+                        <div id="shape-label" class="absolute bottom-3 left-3 bg-slate-800/90 backdrop-blur text-cyan-300 text-xs font-semibold px-3 py-1 rounded-lg border border-slate-700">
+                            Visualisasi Bangun
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2 text-center">
+                        *Ilustrasi bangun ruang disertai ukuran untuk membantu perhitunganmu.
+                    </p>
+                </div>
+
+                <!-- Kolom Kanan: Pertanyaan & Pilihan Jawaban -->
+                <div class="lg:col-span-7 flex flex-col justify-between">
+                    <div class="bg-slate-800/60 border border-slate-700/80 p-5 rounded-2xl mb-5">
+                        <h2 id="question-text" class="text-base sm:text-lg font-medium text-white leading-relaxed">
+                            Memuat pertanyaan...
+                        </h2>
+                    </div>
+
+                    <!-- Grid Pilihan Jawaban (A, B, C, D) -->
+                    <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                        <!-- Tombol opsi akan di-render oleh JavaScript -->
+                    </div>
+
+                    <!-- Kotak Umpan Balik / Pembahasan -->
+                    <div id="feedback-box" class="hidden rounded-2xl p-4 border transition-all animate-pop">
+                        <div class="flex items-start gap-3">
+                            <div id="feedback-icon" class="text-2xl mt-0.5">✅</div>
+                            <div class="flex-1">
+                                <h3 id="feedback-title" class="font-game font-bold text-base sm:text-lg">Jawaban Benar!</h3>
+                                <p id="feedback-explanation" class="text-xs sm:text-sm text-slate-200 mt-1 leading-relaxed">
+                                    Penjelasan soal muncul di sini.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-end">
+                            <button id="next-btn" onclick="nextQuestion()" class="btn-primary text-white font-game font-semibold px-6 py-2.5 rounded-xl text-sm sm:text-base cursor-pointer">
+                                Soal Berikutnya ➔
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LAYAR 3: HASIL AKHIR (RESULT SCREEN) -->
+        <section id="result-screen" class="hidden p-6 sm:p-12 text-center flex flex-col items-center justify-center min-h-[500px] animate-pop">
+            <div id="result-trophy" class="text-6xl sm:text-7xl mb-4">🏆</div>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white mb-2">Petualangan Selesai!</h2>
+            <p id="result-predicate" class="text-cyan-400 font-game text-lg sm:text-xl font-semibold mb-6">
+                Luar Biasa! Master Geometri!
+            </p>
+
+            <!-- Ringkasan Statistik -->
+            <div class="grid grid-cols-3 gap-3 sm:gap-5 w-full max-w-md mb-8">
+                <div class="bg-slate-800/90 border border-slate-700 p-4 rounded-2xl">
+                    <div class="text-xs text-slate-400 uppercase font-semibold mb-1">Skor Akhir</div>
+                    <div id="final-score" class="font-game text-2xl sm:text-3xl font-bold text-amber-400">100</div>
+                </div>
+                <div class="bg-slate-800/90 border border-slate-700 p-4 rounded-2xl">
+                    <div class="text-xs text-slate-400 uppercase font-semibold mb-1">Benar</div>
+                    <div id="final-correct" class="font-game text-2xl sm:text-3xl font-bold text-emerald-400">10/10</div>
+                </div>
+                <div class="bg-slate-800/90 border border-slate-700 p-4 rounded-2xl">
+                    <div class="text-xs text-slate-400 uppercase font-semibold mb-1">Akurasi</div>
+                    <div id="final-accuracy" class="font-game text-2xl sm:text-3xl font-bold text-cyan-400">100%</div>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="btn-primary text-white font-game font-bold text-lg px-8 py-4 rounded-2xl cursor-pointer">
+                Main Lagi 🔄
+            </button>
+        </section>
+    </div>
+
+    <!-- Script Utama Logika Game dan Rendering Canvas -->
+    <script>
+        /**
+         * DATA 10 PERTANYAAN BANGUN RUANG SISI DATAR (KELAS 9)
+         * Disusun secara bertahap:
+         * - Nomor 1-3: Tingkat Mudah (Unsur & Sifat Bangun Ruang)
+         * - Nomor 4-7: Tingkat Menengah (Luas Permukaan & Volume Dasar)
+         * - Nomor 8-10: Tingkat Sulit / HOTS (Diagonal Ruang, Gabungan, & Kontekstual)
+         */
+        const questionsData = [
+            {
+                level: "Mudah",
+                shapeType: "cube_elements",
+                shapeLabel: "Kubus ABCD.EFGH",
+                question: "Perhatikan gambar kubus di samping. Berapakah jumlah seluruh rusuk dan titik sudut yang dimiliki oleh bangun ruang kubus?",
+                options: [
+                    "12 rusuk dan 8 titik sudut",
+                    "8 rusuk dan 12 titik sudut",
+                    "6 rusuk dan 8 titik sudut",
+                    "12 rusuk dan 6 titik sudut"
+                ],
+                correctIndex: 0,
+                explanation: "Kubus memiliki 6 sisi berbentuk persegi yang kongruen, 12 rusuk yang sama panjang (4 alas, 4 tutup, 4 tegak), serta 8 titik sudut."
+            },
+            {
+                level: "Mudah",
+                shapeType: "prism_triangle",
+                shapeLabel: "Prisma Segitiga",
+                question: "Sebuah prisma memiliki alas berbentuk segitiga. Berapakah banyak sisi (bidang) yang dimiliki oleh prisma segitiga tersebut?",
+                options: [
+                    "4 sisi",
+                    "5 sisi",
+                    "6 sisi",
+                    "9 sisi"
+                ],
+                correctIndex: 1,
+                explanation: "Rumus banyak sisi prisma segi-n adalah (n + 2). Karena alasnya segitiga (n = 3), maka banyak sisinya adalah 3 + 2 = 5 sisi (alas, tutup, dan 3 sisi tegak)."
+            },
+            {
+                level: "Mudah",
+                shapeType: "pyramid_square",
+                shapeLabel: "Limas Segi Empat T.ABCD",
+                question: "Perhatikan bangun limas segi empat beraturan di samping. Sisi-sisi tegak pada limas tersebut selalu berbentuk bangun datar...",
+                options: [
+                    "Persegi panjang",
+                    "Trapesium",
+                    "Segitiga",
+                    "Jajar genjang"
+                ],
+                correctIndex: 2,
+                explanation: "Ciri utama bangun ruang limas adalah memiliki satu bidang alas dan sisi-sisi tegak berbentuk segitiga yang berpotongan di satu titik puncak (T)."
+            },
+            {
+                level: "Menengah",
+                shapeType: "cube_size",
+                shapeLabel: "Kubus (s = 8 cm)",
+                question: "Sebuah kotak kado berbentuk kubus memiliki panjang rusuk 8 cm. Berapakah luas permukaan seluruh kotak kado tersebut?",
+                options: [
+                    "64 cm²",
+                    "256 cm²",
+                    "384 cm²",
+                    "512 cm²"
+                ],
+                correctIndex: 2,
+                explanation: "Luas permukaan kubus = 6 × s². Dengan s = 8 cm, maka L = 6 × (8 × 8) = 6 × 64 = 384 cm²."
+            },
+            {
+                level: "Menengah",
+                shapeType: "cuboid_size",
+                shapeLabel: "Balok (10 × 6 × 5 cm)",
+                question: "Sebuah akuarium kecil berbentuk balok berukuran panjang 10 cm, lebar 6 cm, dan tinggi 5 cm. Berapakah volume air maksimal yang dapat ditampung?",
+                options: [
+                    "210 cm³",
+                    "280 cm³",
+                    "300 cm³",
+                    "320 cm³"
+                ],
+                correctIndex: 2,
+                explanation: "Volume balok = p × l × t. Maka V = 10 cm × 6 cm × 5 cm = 300 cm³."
+            },
+            {
+                level: "Menengah",
+                shapeType: "prism_right_triangle",
+                shapeLabel: "Prisma Segitiga Siku-siku",
+                question: "Sebuah prisma tegak memiliki alas berbentuk segitiga siku-siku dengan panjang sisi siku-sikunya 6 cm dan 8 cm. Jika tinggi prisma 12 cm, hitunglah volumenya!",
+                options: [
+                    "288 cm³",
+                    "576 cm³",
+                    "144 cm³",
+                    "96 cm³"
+                ],
+                correctIndex: 0,
+                explanation: "Luas alas segitiga = ½ × alas × tinggi = ½ × 6 × 8 = 24 cm². Volume prisma = Luas alas × tinggi prisma = 24 × 12 = 288 cm³."
+            },
+            {
+                level: "Menengah",
+                shapeType: "pyramid_size",
+                shapeLabel: "Limas Persegi (s = 10 cm, t = 12 cm)",
+                question: "Diketahui sebuah limas dengan alas berbentuk persegi bersisi 10 cm. Jika tinggi limas tersebut adalah 12 cm, berapakah volumenya?",
+                options: [
+                    "1.200 cm³",
+                    "600 cm³",
+                    "400 cm³",
+                    "300 cm³"
+                ],
+                correctIndex: 2,
+                explanation: "Volume limas = ⅓ × Luas alas × tinggi. Luas alas persegi = 10 × 10 = 100 cm². Maka V = ⅓ × 100 × 12 = 400 cm³."
+            },
+            {
+                level: "Sulit (HOTS)",
+                shapeType: "cuboid_surface",
+                shapeLabel: "Balok Tanpa Tutup",
+                question: "Budi akan membuat kotak penyimpanan dari karton berbentuk balok TANPA TUTUP dengan panjang 12 cm, lebar 8 cm, dan tinggi 5 cm. Luas minimal karton yang dibutuhkan adalah...",
+                options: [
+                    "392 cm²",
+                    "296 cm²",
+                    "480 cm²",
+                    "200 cm²"
+                ],
+                correctIndex: 1,
+                explanation: "Karena tanpa tutup, luas alas hanya dihitung satu kali: L = (p × l) + 2(p × t) + 2(l × t) = (12×8) + 2(12×5) + 2(8×5) = 96 + 120 + 80 = 296 cm²."
+            },
+            {
+                level: "Sulit (HOTS)",
+                shapeType: "pyramid_slant",
+                shapeLabel: "Limas Segi Empat Beraturan",
+                question: "Sebuah limas persegi memiliki panjang rusuk alas 12 cm dan tinggi limas 8 cm. Hitunglah luas seluruh permukaan limas tersebut! (Petunjuk: cari tinggi segitiga tegak dengan Pythagoras)",
+                options: [
+                    "336 cm²",
+                    "384 cm²",
+                    "240 cm²",
+                    "528 cm²"
+                ],
+                correctIndex: 1,
+                explanation: "Tinggi sisi tegak (apotema) = √(8² + 6²) = √(64 + 36) = 10 cm. Luas alas = 12×12 = 144 cm². Luas 4 segitiga = 4 × (½ × 12 × 10) = 240 cm². Total = 144 + 240 = 384 cm²."
+            },
+            {
+                level: "Sulit (HOTS)",
+                shapeType: "composite_house",
+                shapeLabel: "Gabungan Kubus & Limas",
+                question: "Sebuah menara mainan merupakan gabungan kubus (rusuk 6 cm) dan limas segi empat di atasnya dengan tinggi limas 4 cm. Berapakah volume total menara mainan tersebut?",
+                options: [
+                    "216 cm³",
+                    "264 cm³",
+                    "288 cm³",
+                    "360 cm³"
+                ],
+                correctIndex: 1,
+                explanation: "Volume kubus = 6³ = 216 cm³. Volume limas = ⅓ × (6 × 6) × 4 = ⅓ × 36 × 4 = 48 cm³. Volume gabungan = 216 + 48 = 264 cm³."
+            }
+        ];
+
+        // Variabel State Game
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let correctAnswersCount = 0;
+        let isAnswered = false;
+        let animationFrameId = null;
+        let animAngle = 0; // Untuk efek animasi mengambang halus pada canvas
+
+        // Referensi Elemen DOM
+        const startScreen = document.getElementById('start-screen');
+        const playScreen = document.getElementById('play-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const gameHeader = document.getElementById('game-header');
+        
+        const currentQNumEl = document.getElementById('current-q-num');
+        const difficultyBadgeEl = document.getElementById('difficulty-badge');
+        const progressBarEl = document.getElementById('progress-bar');
+        const scoreDisplayEl = document.getElementById('score-display');
+        
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainerEl = document.getElementById('options-container');
+        const feedbackBoxEl = document.getElementById('feedback-box');
+        const feedbackIconEl = document.getElementById('feedback-icon');
+        const feedbackTitleEl = document.getElementById('feedback-title');
+        const feedbackExplanationEl = document.getElementById('feedback-explanation');
+        const nextBtnEl = document.getElementById('next-btn');
+        const shapeLabelEl = document.getElementById('shape-label');
+
+        const canvas = document.getElementById('geometryCanvas');
+        const ctx = canvas.getContext('2d');
+
+        /**
+         * Efek Suara Sederhana Menggunakan Web Audio API (Tanpa file eksternal)
+         */
+        function playSound(type) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                if (type === 'correct') {
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                    oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+                    gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + 0.4);
+                } else if (type === 'wrong') {
+                    oscillator.type = 'triangle';
+                    oscillator.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(160, audioCtx.currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + 0.35);
+                }
+            } catch (e) {
+                // Abaikan jika browser memblokir audio otomatis
+            }
+        }
+
+        /**
+         * Mengatur ulang ukuran Canvas agar tajam di layar Retina/Mobile
+         */
+        function resizeCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            if (!wrapper) return;
+            const rect = wrapper.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+        }
+
+        window.addEventListener('resize', () => {
+            if (!playScreen.classList.contains('hidden')) {
+                resizeCanvas();
+            }
+        });
+
+        /**
+         * Memulai atau Mengulang Permainan
+         */
+        function startGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            correctAnswersCount = 0;
+            scoreDisplayEl.textContent = '0';
+
+            startScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            gameHeader.classList.remove('hidden');
+            playScreen.classList.remove('hidden');
+
+            resizeCanvas();
+            loadQuestion();
+            
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            animateCanvas();
+        }
+
+        /**
+         * Memuat Pertanyaan ke Layar
+         */
+        function loadQuestion() {
+            isAnswered = false;
+            const qData = questionsData[currentQuestionIndex];
+
+            // Update Header & Progres
+            currentQNumEl.textContent = currentQuestionIndex + 1;
+            progressBarEl.style.width = `${((currentQuestionIndex + 1) / questionsData.length) * 100}%`;
+            shapeLabelEl.textContent = qData.shapeLabel;
+
+            // Atur Badge Tingkat Kesulitan
+            difficultyBadgeEl.textContent = `Level: ${qData.level}`;
+            difficultyBadgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ";
+            if (qData.level === "Mudah") {
+                difficultyBadgeEl.className += "bg-emerald-500/20 text-emerald-300 border-emerald-500/30";
+            } else if (qData.level === "Menengah") {
+                difficultyBadgeEl.className += "bg-amber-500/20 text-amber-300 border-amber-500/30";
+            } else {
+                difficultyBadgeEl.className += "bg-rose-500/20 text-rose-300 border-rose-500/30";
+            }
+
+            // Tampilkan Teks Pertanyaan
+            questionTextEl.textContent = qData.question;
+
+            // Sembunyikan Kotak Umpan Balik
+            feedbackBoxEl.classList.add('hidden');
+
+            // Render Tombol Pilihan Jawaban
+            optionsContainerEl.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+            qData.options.forEach((optionText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "btn-option w-full text-left bg-slate-800 hover:bg-slate-750 border-2 border-slate-700 hover:border-indigo-400 p-3.5 sm:p-4 rounded-2xl flex items-center gap-3 cursor-pointer";
+                btn.onclick = () => selectAnswer(idx, btn);
+                btn.innerHTML = `
+                    <span class="w-8 h-8 rounded-xl bg-slate-700 text-cyan-300 font-game font-bold flex items-center justify-center shrink-0 text-sm">
+                        ${letters[idx]}
+                    </span>
+                    <span class="text-sm sm:text-base font-medium text-slate-100">${optionText}</span>
+                `;
+                optionsContainerEl.appendChild(btn);
+            });
+
+            // Ubah teks tombol lanjut pada soal terakhir
+            if (currentQuestionIndex === questionsData.length - 1) {
+                nextBtnEl.textContent = "Lihat Hasil Akhir 🏆";
+            } else {
+                nextBtnEl.textContent = "Soal Berikutnya ➔";
+            }
+        }
+
+        /**
+         * Memproses Jawaban Siswa & Memberikan Umpan Balik
+         */
+        function selectAnswer(selectedIndex, selectedBtn) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const qData = questionsData[currentQuestionIndex];
+            const isCorrect = selectedIndex === qData.correctIndex;
+            const allButtons = optionsContainerEl.querySelectorAll('button');
+
+            // Nonaktifkan semua tombol dan beri warna indikator
+            allButtons.forEach((btn, idx) => {
+                btn.disabled = true;
+                btn.classList.remove('hover:border-indigo-400');
+                if (idx === qData.correctIndex) {
+                    btn.classList.remove('bg-slate-800', 'border-slate-700');
+                    btn.classList.add('bg-emerald-900/60', 'border-emerald-400');
+                    btn.querySelector('span:first-child').classList.replace('bg-slate-700', 'bg-emerald-500');
+                    btn.querySelector('span:first-child').classList.replace('text-cyan-300', 'text-slate-950');
+                } else if (idx === selectedIndex && !isCorrect) {
+                    btn.classList.remove('bg-slate-800', 'border-slate-700');
+                    btn.classList.add('bg-rose-900/60', 'border-rose-500');
+                    btn.querySelector('span:first-child').classList.replace('bg-slate-700', 'bg-rose-500');
+                    btn.querySelector('span:first-child').classList.replace('text-cyan-300', 'text-white');
+                } else {
+                    btn.classList.add('opacity-50');
+                }
+            });
+
+            // Update Skor & Tampilkan Feedback
+            if (isCorrect) {
+                score += 10;
+                correctAnswersCount++;
+                scoreDisplayEl.textContent = score;
+                playSound('correct');
+
+                feedbackBoxEl.className = "rounded-2xl p-4 border bg-emerald-950/70 border-emerald-500/50 animate-pop";
+                feedbackIconEl.textContent = "🎉";
+                feedbackTitleEl.textContent = "Tepat Sekali! (+10 Poin)";
+                feedbackTitleEl.className = "font-game font-bold text-base sm:text-lg text-emerald-400";
+            } else {
+                playSound('wrong');
+
+                feedbackBoxEl.className = "rounded-2xl p-4 border bg-rose-950/70 border-rose-500/50 animate-pop";
+                feedbackIconEl.textContent = "💡";
+                feedbackTitleEl.textContent = "Kurang Tepat, Yuk Pelajari!";
+                feedbackTitleEl.className = "font-game font-bold text-base sm:text-lg text-rose-400";
+            }
+
+            feedbackExplanationEl.textContent = qData.explanation;
+            feedbackBoxEl.classList.remove('hidden');
+        }
+
+        /**
+         * Berpindah ke Soal Berikutnya atau Layar Hasil
+         */
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questionsData.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        /**
+         * Menampilkan Layar Hasil Akhir
+         */
+        function showResult() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            playScreen.classList.add('hidden');
+            gameHeader.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+
+            const accuracy = Math.round((correctAnswersCount / questionsData.length) * 100);
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('final-correct').textContent = `${correctAnswersCount}/10`;
+            document.getElementById('final-accuracy').textContent = `${accuracy}%`;
+
+            const trophyEl = document.getElementById('result-trophy');
+            const predicateEl = document.getElementById('result-predicate');
+
+            if (score >= 90) {
+                trophyEl.textContent = "🏆";
+                predicateEl.textContent = "Luar Biasa! Kamu Master Bangun Ruang!";
+            } else if (score >= 70) {
+                trophyEl.textContent = "🌟";
+                predicateEl.textContent = "Hebat! Pemahamanmu Sudah Sangat Baik!";
+            } else if (score >= 50) {
+                trophyEl.textContent = "👍";
+                predicateEl.textContent = "Cukup Baik! Terus Berlatih Menghitung Rumusnya ya!";
+            } else {
+                trophyEl.textContent = "📚";
+                predicateEl.textContent = "Jangan Menyerah! Ayo Coba Lagi dan Baca Pembahasannya!";
+            }
+        }
+
+        /**
+         * ============================================================================
+         * ENGINE GAMBAR BANGUN RUANG 3D ISOMETRIK PADA HTML5 CANVAS
+         * ============================================================================
+         */
+        function animateCanvas() {
+            animAngle += 0.03;
+            drawCurrentShape();
+            animationFrameId = requestAnimationFrame(animateCanvas);
+        }
+
+        function drawCurrentShape() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            if (!wrapper) return;
+            const w = wrapper.clientWidth;
+            const h = wrapper.clientHeight;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Gambar grid latar belakang halus ala cetak biru (blueprint) matematika
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.07)';
+            ctx.lineWidth = 1;
+            const step = 24;
+            for (let x = 0; x < w; x += step) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+            }
+            for (let y = 0; y < h; y += step) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+            }
+
+            const cx = w / 2;
+            const cy = h / 2 - 8 + Math.sin(animAngle) * 4; // Efek melayang lembut
+            const shapeType = questionsData[currentQuestionIndex].shapeType;
+
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+
+            switch (shapeType) {
+                case 'cube_elements':
+                    drawBox(cx, cy, 85, 85, 42, ['#38bdf8', '#0284c7', '#0369a1'], { vertices: true });
+                    break;
+                case 'prism_triangle':
+                    drawTriangularPrism(cx, cy, 90, 95, false);
+                    break;
+                case 'pyramid_square':
+                    drawSquarePyramid(cx, cy + 10, 100, 110, null);
+                    break;
+                case 'cube_size':
+                    drawBox(cx, cy, 85, 85, 42, ['#818cf8', '#4f46e5', '#3730a3'], { labels: ['8 cm', '8 cm', '8 cm'] });
+                    break;
+                case 'cuboid_size':
+                    drawBox(cx, cy, 120, 65, 45, ['#34d399', '#059669', '#065f46'], { labels: ['10 cm', '6 cm', '5 cm'] });
+                    break;
+                case 'prism_right_triangle':
+                    drawTriangularPrism(cx, cy, 95, 95, true);
+                    break;
+                case 'pyramid_size':
+                    drawSquarePyramid(cx, cy + 10, 105, 115, { base: '10 cm', height: '12 cm' });
+                    break;
+                case 'cuboid_surface':
+                    drawBox(cx, cy, 125, 60, 48, ['#fbbf24', '#d97706', '#92400e'], { labels: ['12 cm', '8 cm', '5 cm'], openTop: true });
+                    break;
+                case 'pyramid_slant':
+                    drawSquarePyramid(cx, cy + 10, 105, 110, { base: '12 cm', height: '8 cm' });
+                    break;
+                case 'composite_house':
+                    drawCompositeCubePyramid(cx, cy + 25);
+                    break;
+            }
+        }
+
+        // Fungsi Helper Menggambar Kubus / Balok
+        function drawBox(cx, cy, width, height, depth, colors, opts = {}) {
+            const dx = depth * 0.7;
+            const dy = -depth * 0.5;
+            const x0 = cx - width / 2 - dx / 2;
+            const y0 = cy - height / 2 - dy / 2;
+
+            // Koordinat 8 titik sudut
+            const fTL = [x0, y0], fTR = [x0 + width, y0], fBR = [x0 + width, y0 + height], fBL = [x0, y0 + height];
+            const bTL = [x0 + dx, y0 + dy], bTR = [x0 + width + dx, y0 + dy], bBR = [x0 + width + dx, y0 + height + dy], bBL = [x0 + dx, y0 + height + dy];
+
+            // Garis putus-putus belakang
+            ctx.setLineDash([4, 4]);
+            ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(bBL[0], bBL[1]); ctx.lineTo(bTL[0], bTL[1]);
+            ctx.moveTo(bBL[0], bBL[1]); ctx.lineTo(bBR[0], bBR[1]);
+            ctx.moveTo(bBL[0], bBL[1]); ctx.lineTo(fBL[0], fBL[1]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Sisi Atas (Kecuali jika tanpa tutup)
+            if (!opts.openTop) {
+                ctx.fillStyle = colors[0] + '88';
+                ctx.beginPath();
+                ctx.moveTo(...fTL); ctx.lineTo(...bTL); ctx.lineTo(...bTR); ctx.lineTo(...fTR);
+                ctx.closePath(); ctx.fill();
+            } else {
+                // Jika tanpa tutup, beri arsir gelap di dalam
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+                ctx.beginPath();
+                ctx.moveTo(...fTL); ctx.lineTo(...bTL); ctx.lineTo(...bTR); ctx.lineTo(...fTR);
+                ctx.closePath(); ctx.fill();
+            }
+
+            // Sisi Depan
+            ctx.fillStyle = colors[1] + '99';
+            ctx.beginPath();
+            ctx.moveTo(...fTL); ctx.lineTo(...fTR); ctx.lineTo(...fBR); ctx.lineTo(...fBL);
+            ctx.closePath(); ctx.fill();
+
+            // Sisi Samping Kanan
+            ctx.fillStyle = colors[2] + 'aa';
+            ctx.beginPath();
+            ctx.moveTo(...fTR); ctx.lineTo(...bTR); ctx.lineTo(...bBR); ctx.lineTo(...fBR);
+            ctx.closePath(); ctx.fill();
+
+            // Garis Tepi Utama
+            ctx.strokeStyle = '#f8fafc';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(...fTL); ctx.lineTo(...fTR); ctx.lineTo(...fBR); ctx.lineTo(...fBL); ctx.closePath();
+            ctx.moveTo(...fTL); ctx.lineTo(...bTL); ctx.lineTo(...bTR); ctx.lineTo(...fTR);
+            ctx.moveTo(...bTR); ctx.lineTo(...bBR); ctx.lineTo(...fBR);
+            ctx.stroke();
+
+            // Titik sudut menyala (untuk soal 1)
+            if (opts.vertices) {
+                const pts = [fTL, fTR, fBR, fBL, bTL, bTR, bBR, bBL];
+                pts.forEach(p => {
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.beginPath();
+                    ctx.arc(p[0], p[1], 4.5, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            // Label Ukuran
+            if (opts.labels) {
+                drawTextTag(opts.labels[0], (fBL[0] + fBR[0]) / 2, fBL[1] + 16); // Panjang
+                drawTextTag(opts.labels[1], (fBR[0] + bBR[0]) / 2 + 22, (fBR[1] + bBR[1]) / 2 + 8); // Lebar
+                drawTextTag(opts.labels[2], fBL[0] - 24, (fTL[1] + fBL[1]) / 2); // Tinggi
+            }
+        }
+
+        // Fungsi Helper Menggambar Prisma Segitiga
+        function drawTriangularPrism(cx, cy, baseW, height, showLabels) {
+            const dx = 45, dy = -35;
+            const x0 = cx - baseW / 2 - dx / 2;
+            const y0 = cy + height / 2 - dy / 2;
+
+            const fBL = [x0, y0], fBR = [x0 + baseW, y0];
+            const fTop = showLabels ? [x0, y0 - height * 0.75] : [x0 + baseW / 2, y0 - height * 0.8];
+
+            const bBL = [fBL[0] + dx, fBL[1] + dy];
+            const bBR = [fBR[0] + dx, fBR[1] + dy];
+            const bTop = [fTop[0] + dx, fTop[1] + dy];
+
+            // Garis putus belakang
+            ctx.setLineDash([4, 4]);
+            ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(...bBL); ctx.lineTo(...bBR);
+            ctx.moveTo(...bBL); ctx.lineTo(...bTop);
+            ctx.moveTo(...bBL); ctx.lineTo(...fBL);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Sisi Samping/Atas
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.45)';
+            ctx.beginPath();
+            ctx.moveTo(...fTop); ctx.lineTo(...bTop); ctx.lineTo(...bBR); ctx.lineTo(...fBR);
+            ctx.closePath(); ctx.fill();
+
+            // Segitiga Depan
+            ctx.fillStyle = 'rgba(14, 165, 233, 0.65)';
+            ctx.beginPath();
+            ctx.moveTo(...fBL); ctx.lineTo(...fBR); ctx.lineTo(...fTop);
+            ctx.closePath(); ctx.fill();
+
+            // Garis Tepi
+            ctx.strokeStyle = '#f8fafc';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(...fBL); ctx.lineTo(...fBR); ctx.lineTo(...fTop); ctx.closePath();
+            ctx.moveTo(...fTop); ctx.lineTo(...bTop); ctx.lineTo(...bBR); ctx.lineTo(...fBR);
+            ctx.stroke();
+
+            if (showLabels) {
+                // Tanda siku-siku
+                ctx.strokeRect(fBL[0], fBL[1] - 10, 10, 10);
+                drawTextTag("8 cm", (fBL[0] + fBR[0]) / 2, fBL[1] + 16);
+                drawTextTag("6 cm", fBL[0] - 24, (fBL[1] + fTop[1]) / 2);
+                drawTextTag("t = 12 cm", (fBR[0] + bBR[0]) / 2 + 30, (fBR[1] + bBR[1]) / 2 + 8);
+            }
+        }
+
+        // Fungsi Helper Menggambar Limas Segi Empat
+        function drawSquarePyramid(cx, cy, baseW, height, labels) {
+            const dx = 40, dy = -28;
+            const x0 = cx - baseW / 2 - dx / 2;
+            const y0 = cy + height * 0.35;
+
+            const fBL = [x0, y0], fBR = [x0 + baseW, y0];
+            const bBL = [x0 + dx, y0 + dy], bBR = [x0 + baseW + dx, y0 + dy];
+            const centerBase = [(fBL[0] + bBR[0]) / 2, (fBL[1] + bBR[1]) / 2];
+            const apex = [centerBase[0], centerBase[1] - height];
+
+            // Garis putus alas & tinggi
+            ctx.setLineDash([4, 4]);
+            ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(...fBL); ctx.lineTo(...bBL); ctx.lineTo(...bBR);
+            ctx.moveTo(...bBL); ctx.lineTo(...apex);
+            // Garis tinggi limas
+            ctx.strokeStyle = '#fbbf24';
+            ctx.moveTo(...centerBase); ctx.lineTo(...apex);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Sisi Depan
+            ctx.fillStyle = 'rgba(244, 63, 94, 0.55)';
+            ctx.beginPath();
+            ctx.moveTo(...fBL); ctx.lineTo(...fBR); ctx.lineTo(...apex);
+            ctx.closePath(); ctx.fill();
+
+            // Sisi Kanan
+            ctx.fillStyle = 'rgba(190, 18, 60, 0.65)';
+            ctx.beginPath();
+            ctx.moveTo(...fBR); ctx.lineTo(...bBR); ctx.lineTo(...apex);
+            ctx.closePath(); ctx.fill();
+
+            // Garis Tepi Utama
+            ctx.strokeStyle = '#f8fafc';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(...fBL); ctx.lineTo(...fBR); ctx.lineTo(...bBR);
+            ctx.moveTo(...fBL); ctx.lineTo(...apex);
+            ctx.moveTo(...fBR); ctx.lineTo(...apex);
+            ctx.moveTo(...bBR); ctx.lineTo(...apex);
+            ctx.stroke();
+
+            if (labels) {
+                drawTextTag(labels.base, (fBL[0] + fBR[0]) / 2, fBL[1] + 16);
+                drawTextTag("t = " + labels.height, centerBase[0] - 26, (centerBase[1] + apex[1]) / 2);
+            }
+        }
+
+        // Fungsi Helper Menggambar Gabungan Kubus dan Limas (Soal 10)
+        function drawCompositeCubePyramid(cx, cy) {
+            const s = 68;
+            const dx = 32, dy = -22;
+            const x0 = cx - s / 2 - dx / 2;
+            const y0 = cy - s / 2;
+
+            const fTL = [x0, y0], fTR = [x0 + s, y0], fBR = [x0 + s, y0 + s], fBL = [x0, y0 + s];
+            const bTL = [x0 + dx, y0 + dy], bTR = [x0 + s + dx, y0 + dy], bBR = [x0 + s + dx, y0 + s + dy];
+            
+            const topCenter = [(fTL[0] + bTR[0]) / 2, (fTL[1] + bTR[1]) / 2];
+            const apex = [topCenter[0], topCenter[1] - 50];
+
+            // Kubus Bawah
+            ctx.fillStyle = 'rgba(99, 102, 241, 0.6)';
+            ctx.fillRect(fTL[0], fTL[1], s, s);
+            ctx.fillStyle = 'rgba(67, 56, 202, 0.7)';
+            ctx.beginPath();
+            ctx.moveTo(...fTR); ctx.lineTo(...bTR); ctx.lineTo(...bBR); ctx.lineTo(...fBR);
+            ctx.closePath(); ctx.fill();
+
+            // Limas Atas
+            ctx.fillStyle = 'rgba(34, 211, 238, 0.6)';
+            ctx.beginPath();
+            ctx.moveTo(...fTL); ctx.lineTo(...fTR); ctx.lineTo(...apex);
+            ctx.closePath(); ctx.fill();
+
+            ctx.fillStyle = 'rgba(8, 145, 178, 0.7)';
+            ctx.beginPath();
+            ctx.moveTo(...fTR); ctx.lineTo(...bTR); ctx.lineTo(...apex);
+            ctx.closePath(); ctx.fill();
+
+            // Garis Tepi
+            ctx.strokeStyle = '#f8fafc';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(fTL[0], fTL[1], s, s);
+            ctx.beginPath();
+            ctx.moveTo(...fTR); ctx.lineTo(...bTR); ctx.lineTo(...bBR); ctx.lineTo(...fBR);
+            ctx.moveTo(...fTL); ctx.lineTo(...apex);
+            ctx.moveTo(...fTR); ctx.lineTo(...apex);
+            ctx.moveTo(...bTR); ctx.lineTo(...apex);
+            ctx.stroke();
+
+            // Garis tinggi limas
+            ctx.setLineDash([3, 3]);
+            ctx.strokeStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.moveTo(...topCenter); ctx.lineTo(...apex);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            drawTextTag("6 cm", (fBL[0] + fBR[0]) / 2, fBL[1] + 15);
+            drawTextTag("t = 4 cm", apex[0] + 34, (apex[1] + topCenter[1]) / 2);
+        }
+
+        // Helper Teks Ukuran pada Canvas
+        function drawTextTag(text, x, y) {
+            ctx.font = '600 12px Inter, sans-serif';
+            const metrics = ctx.measureText(text);
+            const padX = 6, padY = 4;
+            const w = metrics.width + padX * 2;
+            const h = 18;
+
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.beginPath();
+            ctx.roundRect(x - w / 2, y - h / 2 - 2, w, h, 5);
+            ctx.fill();
+
+            ctx.fillStyle = '#38bdf8';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, x, y - 1);
+        }
+    </script>
+</body>
+</html>
